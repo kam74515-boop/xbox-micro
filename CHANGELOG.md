@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-08-04
+
+### Fixed
+
+- **Xbox Elite Series 2 over Bluetooth.** The pad (`045e:0b13`) was listed in `XBOX_PIDS`, an unverified PID carried over from the v1 extension, so it was parsed with the wired report layout and produced garbage input. Over Bluetooth it speaks the standard Xbox BT HID report, so it now routes to `XBOX_BT_PIDS` and `parseXboxBtReport`.
+- **Codex app launch after rename.** The harness addressed the app by the literal name `Codex`, which fails when the installed app is named ChatGPT. It now targets the bundle ID `com.openai.codex`.
+
 ## [1.4.1] - 2026-07-31
 
 ### Added
