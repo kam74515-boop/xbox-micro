@@ -4,10 +4,16 @@ import type { ControlId } from './layers.js'
 import type { ControllerEvent, ControllerType } from './types.js'
 
 export type GuiStatusTone = 'success' | 'warning' | 'action' | AgentState
+export type GuiStatusKind = 'lifecycle' | 'controller' | 'action' | 'agent'
 
 export interface GuiStatus {
+  kind: GuiStatusKind
   message: string
   tone: GuiStatusTone
+  state?: string
+  controllerType?: ControllerType
+  control?: ControlId
+  actionType?: Action['type']
 }
 
 export interface AgentStatus extends GuiStatus {
@@ -18,12 +24,20 @@ export interface AgentStatus extends GuiStatus {
 export function controllerStatus(event: ControllerEvent): GuiStatus | null {
   if (event.kind === 'connected') {
     return {
+      kind: 'controller',
       message: `controller connected (${event.controllerType}) — buttons now drive the app`,
       tone: 'success',
+      state: 'connected',
+      controllerType: event.controllerType,
     }
   }
   if (event.kind === 'disconnected') {
-    return { message: 'controller disconnected — waiting…', tone: 'warning' }
+    return {
+      kind: 'controller',
+      message: 'controller disconnected — waiting…',
+      tone: 'warning',
+      state: 'disconnected',
+    }
   }
   return null
 }
@@ -36,8 +50,11 @@ export function actionStatus(
 ): GuiStatus | null {
   if (!control) return null
   return {
+    kind: 'action',
     message: `${controlLabel(control, controllerType)} → ${actionLabel(action)}`,
     tone: 'action',
+    control,
+    actionType: action.type,
   }
 }
 
@@ -49,8 +66,18 @@ export function agentStatus(
   const stateKey = states.join(', ')
   if (!stateKey || stateKey === previousStateKey) return null
   return {
+    kind: 'agent',
     message: `agent: ${stateKey}`,
     tone: states[0] ?? 'idle',
+    state: stateKey,
     stateKey,
   }
+}
+
+/** One-line protocol consumed by the native desktop app. */
+export function serializeGuiStatus(
+  status: GuiStatus,
+  timestamp = new Date().toISOString(),
+): string {
+  return JSON.stringify({ source: 'openmicro', timestamp, ...status })
 }

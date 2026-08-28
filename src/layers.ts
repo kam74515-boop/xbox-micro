@@ -43,7 +43,7 @@ export interface OpenMicroConfig {
   workflows: Record<string, string>
 }
 
-const CONTROL_IDS: readonly ControlId[] = [
+export const CONTROL_IDS: readonly ControlId[] = [
   'south',
   'east',
   'west',
@@ -127,57 +127,111 @@ const LAYER_COLORS: RGB[] = [
   { r: 255, g: 255, b: 0 }, // Layer 6 — yellow
 ]
 
-function blankLayer(index: number): Layer {
-  return { name: `Layer ${index + 1}`, color: LAYER_COLORS[index]!, bindings: {} }
+const FACE_BINDINGS: Layer['bindings'] = {
+  south: { type: 'accept' },
+  east: { type: 'reject' },
+  north: { type: 'push_to_talk' },
+  west: { type: 'new_chat' },
+}
+
+const DPAD_BINDINGS: Layer['bindings'] = {
+  dpad_up: { type: 'keys', bytes: '\x1b[A' },
+  dpad_down: { type: 'keys', bytes: '\x1b[B' },
+  dpad_right: { type: 'keys', bytes: '\x1b[C' },
+  dpad_left: { type: 'keys', bytes: '\x1b[D' },
+}
+
+function configuredLayer(index: number, name: string, bindings: Layer['bindings']): Layer {
+  return {
+    name,
+    color: LAYER_COLORS[index]!,
+    bindings: {
+      menu: { type: 'layer', index: (index + 1) % 6 },
+      view: { type: 'layer', index: (index + 5) % 6 },
+      ...bindings,
+    },
+  }
 }
 
 export const DEFAULT_CONFIG: OpenMicroConfig = {
   layers: [
-    {
-      name: 'Layer 1',
-      color: LAYER_COLORS[0]!,
-      bindings: {
-        south: { type: 'accept' },
-        east: { type: 'reject' },
-        north: { type: 'push_to_talk' },
-        west: { type: 'new_chat' },
-        dpad_up: { type: 'keys', bytes: '\x1b[A' },
-        dpad_down: { type: 'keys', bytes: '\x1b[B' },
-        dpad_right: { type: 'keys', bytes: '\x1b[C' },
-        dpad_left: { type: 'keys', bytes: '\x1b[D' },
-        r1: { type: 'keys', bytes: '\x1b[Z' }, // Shift+Tab — cycle permission/plan modes
-        r2: { type: 'keys', bytes: '\x15' }, // Ctrl+U — clear the input line
-        lstick_up: { type: 'workflow', presetId: 'review-pr' },
-        lstick_down: { type: 'workflow', presetId: 'debug' },
-        lstick_left: { type: 'workflow', presetId: 'refactor' },
-        lstick_right: { type: 'workflow', presetId: 'write-tests' },
-        l2: { type: 'herdr_space' },
-        // Flicks, not cw/ccw rotation — rotation gestures proved finicky to
-        // perform reliably; left/right flicks are still remappable to cw/ccw.
-        rstick_right: { type: 'thinking_depth', delta: 1 },
-        rstick_left: { type: 'thinking_depth', delta: -1 },
-        // Ctrl+Shift+M (CSI-u encoding). In the Codex app this opens the model
-        // picker (user-assigned ^⇧M) so the thinking dial has a visual;
-        // terminal harnesses ignore the sequence.
-        r3: { type: 'keys', bytes: '\x1b[109;6u' },
-        touchpad: TOUCHPAD_CYCLE,
-      },
-    },
-    blankLayer(1),
-    blankLayer(2),
-    blankLayer(3),
-    blankLayer(4),
-    blankLayer(5),
+    configuredLayer(0, 'Codex 主控', {
+      ...FACE_BINDINGS,
+      ...DPAD_BINDINGS,
+      r1: { type: 'keys', bytes: '\x1b[Z' }, // Shift+Tab — cycle permission/plan modes
+      r2: { type: 'keys', bytes: '\x15' }, // Ctrl+U — clear the input line
+      lstick_up: { type: 'workflow', presetId: 'review-pr' },
+      lstick_down: { type: 'workflow', presetId: 'debug' },
+      lstick_left: { type: 'workflow', presetId: 'refactor' },
+      lstick_right: { type: 'workflow', presetId: 'write-tests' },
+      l2: { type: 'herdr_space' },
+      // Flicks, not cw/ccw rotation — rotation gestures proved finicky to
+      // perform reliably; left/right flicks are still remappable to cw/ccw.
+      rstick_right: { type: 'thinking_depth', delta: 1 },
+      rstick_left: { type: 'thinking_depth', delta: -1 },
+      // Ctrl+Shift+M (CSI-u encoding). In the Codex app this opens the model
+      // picker (user-assigned ^⇧M) so the thinking dial has a visual.
+      r3: { type: 'keys', bytes: '\x1b[109;6u' },
+      touchpad: TOUCHPAD_CYCLE,
+    }),
+    configuredLayer(1, '语音与提示', {
+      ...FACE_BINDINGS,
+      ...DPAD_BINDINGS,
+      l1: { type: 'workflow', presetId: 'review-pr' },
+      r1: { type: 'workflow', presetId: 'debug' },
+      l2: { type: 'workflow', presetId: 'refactor' },
+      r2: { type: 'workflow', presetId: 'write-tests' },
+      l3: { type: 'prompt', text: '总结当前任务的进展、风险和下一步。' },
+      r3: { type: 'prompt', text: '解释当前屏幕中的结果，并告诉我应该选择什么。' },
+      touchpad: TOUCHPAD_CYCLE,
+    }),
+    configuredLayer(2, '代码审查', {
+      ...FACE_BINDINGS,
+      ...DPAD_BINDINGS,
+      west: { type: 'workflow', presetId: 'review-pr' },
+      l1: { type: 'prompt', text: '仅检查当前改动中的安全漏洞、权限边界和敏感数据风险。' },
+      r1: { type: 'prompt', text: '审查未提交改动，按严重程度列出问题并引用文件与行号。' },
+      l2: { type: 'prompt', text: '列出当前改动最可能导致回归的三个风险。' },
+      r2: { type: 'prompt', text: '基于审查结果生成最小修复计划，暂时不要修改代码。' },
+      lstick_left: { type: 'workflow', presetId: 'refactor' },
+      lstick_right: { type: 'workflow', presetId: 'write-tests' },
+      touchpad: TOUCHPAD_CYCLE,
+    }),
+    configuredLayer(3, '调试与测试', {
+      ...FACE_BINDINGS,
+      ...DPAD_BINDINGS,
+      west: { type: 'workflow', presetId: 'debug' },
+      l1: { type: 'workflow', presetId: 'debug' },
+      r1: { type: 'workflow', presetId: 'write-tests' },
+      l2: { type: 'workflow', presetId: 'refactor' },
+      r2: { type: 'workflow', presetId: 'review-pr' },
+      lstick_up: { type: 'prompt', text: '运行最相关的测试并解释第一个失败的根因。' },
+      lstick_down: { type: 'prompt', text: '检查日志和错误堆栈，提取最早的有效失败信号。' },
+      touchpad: TOUCHPAD_CYCLE,
+    }),
+    configuredLayer(4, '任务导航', {
+      ...FACE_BINDINGS,
+      ...DPAD_BINDINGS,
+      l1: { type: 'keys', bytes: '\x1b[Z' },
+      r1: { type: 'keys', bytes: '\t' },
+      l2: { type: 'herdr_space' },
+      r2: { type: 'keys', bytes: '\x15' },
+      rstick_right: { type: 'thinking_depth', delta: 1 },
+      rstick_left: { type: 'thinking_depth', delta: -1 },
+      touchpad: TOUCHPAD_CYCLE,
+    }),
+    configuredLayer(5, '自定义', {
+      ...FACE_BINDINGS,
+    }),
   ],
   workflows: {
     'review-pr':
-      'Review this PR for correctness, security, and style issues. Cite file paths and line numbers, and call out anything you are unsure about.',
+      '审查当前 PR 的正确性、安全性和代码风格问题。请引用文件路径和行号，并明确指出任何不确定之处。',
     debug:
-      'Help me debug the current issue. Start by asking what is failing and what you have already tried, then investigate the root cause before proposing a fix.',
+      '帮我调试当前问题。先询问具体的故障现象以及我已经尝试过的方法，然后调查根因，再提出修复方案。',
     refactor:
-      'Refactor the current code for clarity and simplicity without changing its behavior. Explain each change and keep the diff minimal.',
-    'write-tests':
-      'Write tests for the current code, covering the happy path plus the edge cases most likely to break in production.',
+      '在不改变现有行为的前提下重构当前代码，使其更清晰、更简洁。说明每项改动，并保持最小必要差异。',
+    'write-tests': '为当前代码编写测试，覆盖正常路径以及最可能在生产环境中出错的边界情况。',
   },
 }
 

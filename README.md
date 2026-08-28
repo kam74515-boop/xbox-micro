@@ -1,10 +1,44 @@
 <p align="center"><img src="assets/open-micro-banner.png" alt="OpenMicro connects game controllers to Claude Code and Codex CLI" width="100%"></p>
 
-# One controller. Your agent workflow.
+# Xbox Micro
 
-Bring Codex Micro to any gaming controller and coding harness
+把 Xbox 等消费级游戏手柄变成 Codex 的原生 macOS Agent 控制器。
 
-## Start in 60 seconds
+> [!IMPORTANT]
+> 本项目派生自 Stephen Leo 的开源项目 [OpenMicro](https://github.com/stephenleo/OpenMicro)，基线为 `v1.4.3` / commit [`fcde3a1`](https://github.com/stephenleo/OpenMicro/commit/fcde3a1)，继续遵循 [MIT License](LICENSE)。Xbox Micro 新增原生 SwiftUI 桌面端、六层中文交互预设、完整映射编辑、诊断、配置迁移以及 `.app` / `.dmg` 打包。详细来源与改动边界见 [NOTICE.md](NOTICE.md)。
+
+## Xbox Micro macOS App
+
+本仓库包含原生 SwiftUI 桌面端：菜单栏常驻、实时手柄/Agent 状态、六层完整按键映射、中文提示词预设、权限与 Hooks 诊断、登录启动，以及配置导入导出。
+
+开发运行：
+
+```bash
+npm run build
+cd desktop
+XBOX_MICRO_ENGINE_ROOT="$(cd .. && pwd)" swift run XboxMicro
+```
+
+构建可安装的 `.app` 和 `.dmg`（自动下载并校验官方 Node.js arm64 运行时）：
+
+```bash
+npm run desktop:build
+```
+
+产物位于 `build/Xbox Micro.app` 与 `build/Xbox-Micro.dmg`。本地构建采用 ad-hoc 签名；跨设备分发时需要使用 Apple Developer ID 重新签名和公证。
+
+## 项目来源与分支关系
+
+- Xbox Micro 仓库：[kam74515-boop/xbox-micro](https://github.com/kam74515-boop/xbox-micro)
+- 上游项目：[stephenleo/OpenMicro](https://github.com/stephenleo/OpenMicro)
+- 上游基线：OpenMicro `v1.4.3`，commit `fcde3a1`
+- 原始作者：Stephen Leo
+- 授权协议：MIT；原始版权声明保留在 [LICENSE](LICENSE)
+- Git 远程约定：`origin` 指向 Xbox Micro，`upstream` 指向 OpenMicro
+
+下方保留 OpenMicro 引擎的 CLI、兼容性和扩展接口文档；Xbox Micro 桌面端直接复用并扩展该引擎。
+
+## OpenMicro 引擎：Start in 60 seconds
 
 You need macOS, Node.js 22 or newer, Claude Code or Codex CLI, and a connected controller. OpenMicro is macOS-first; other platforms are not yet tested.
 
@@ -102,7 +136,7 @@ OpenMicro creates `~/.openmicro/config.json` on first run. Edit bindings, layer 
 {
   "layers": [
     {
-      "name": "Layer 1",
+      "name": "Codex 主控",
       "color": { "r": 255, "g": 255, "b": 255 },
       "bindings": {
         "south": { "type": "accept" },
@@ -117,7 +151,7 @@ OpenMicro creates `~/.openmicro/config.json` on first run. Edit bindings, layer 
     { "name": "Layer 6", "color": { "r": 255, "g": 255, "b": 0 }, "bindings": {} }
   ],
   "workflows": {
-    "review-pr": "Review this PR for correctness, security, and style issues."
+    "review-pr": "审查当前 PR 的正确性、安全性和代码风格问题。请引用文件路径和行号。"
   }
 }
 ```

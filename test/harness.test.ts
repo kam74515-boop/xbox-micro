@@ -179,6 +179,15 @@ describe('codex-app harness', () => {
     expect(codexAppHarness.resolveAction({ type: 'keys', bytes: '\x1b[A' }, ctx)).toEqual({
       bytes: 'osascript:key code 126',
     })
+    expect(codexAppHarness.resolveAction({ type: 'keys', bytes: '\t' }, ctx)).toEqual({
+      bytes: 'osascript:key code 48',
+    })
+    expect(codexAppHarness.resolveAction({ type: 'keys', bytes: '\r' }, ctx)).toEqual({
+      bytes: 'osascript:keystroke return',
+    })
+    expect(codexAppHarness.resolveAction({ type: 'keys', bytes: '\x1b' }, ctx)).toEqual({
+      bytes: 'osascript:key code 53',
+    })
     expect(codexAppHarness.resolveAction({ type: 'keys', bytes: '\x15' }, ctx)).toEqual({
       bytes: 'osascript:keystroke "a" using command down\nkey code 51',
     })

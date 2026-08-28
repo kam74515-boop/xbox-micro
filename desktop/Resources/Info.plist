@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>zh_CN</string>
+    <key>CFBundleDisplayName</key>
+    <string>Xbox Micro</string>
+    <key>CFBundleExecutable</key>
+    <string>XboxMicro</string>
+    <key>CFBundleIconFile</key>
+    <string>XboxMicro</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.karl.xboxmicro</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Xbox Micro</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Xbox Micro 需要向 System Events 发送按键，以便游戏手柄控制 Codex。</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Xbox Micro 需要访问已连接的蓝牙游戏手柄。</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>OpenMicro contributors. MIT License.</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+</dict>
+</plist>

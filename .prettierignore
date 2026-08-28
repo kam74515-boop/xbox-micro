@@ -4,3 +4,5 @@ package-lock.json
 .claude/
 games/
 TODO.md
+build/
+desktop/.build/

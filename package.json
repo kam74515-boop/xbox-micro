@@ -1,12 +1,23 @@
 {
   "name": "openmicro",
   "version": "1.4.3",
-  "description": "Open-source replica of Work Louder's Codex Micro using a consumer gamepad as the physical AI-agent controller.",
+  "description": "OpenMicro-based engine bundled with the native Xbox Micro macOS Agent controller app.",
   "license": "MIT",
-  "author": "stephenleo",
+  "author": "Stephen Leo (OpenMicro) and Xbox Micro contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stephenleo/OpenMicro.git"
+    "url": "git+https://github.com/kam74515-boop/xbox-micro.git"
+  },
+  "homepage": "https://github.com/kam74515-boop/xbox-micro#readme",
+  "bugs": {
+    "url": "https://github.com/kam74515-boop/xbox-micro/issues"
+  },
+  "x-upstream": {
+    "name": "OpenMicro",
+    "repository": "https://github.com/stephenleo/OpenMicro",
+    "tag": "v1.4.3",
+    "commit": "fcde3a1",
+    "license": "MIT"
   },
   "type": "module",
   "bin": {
@@ -53,6 +64,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "desktop:test": "cd desktop && swift test",
+    "desktop:build": "zsh desktop/scripts/build-app.zsh",
     "capture": "tsx scripts/capture-hid.ts",
     "gen:controllers": "tsx scripts/gen-controller-table.ts && prettier --write CONTROLLERS.md",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test"

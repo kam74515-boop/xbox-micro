@@ -31,7 +31,7 @@ import { effectiveFocusIndex, feedbackFor } from './feedback.js'
 import type { RGB } from './feedback.js'
 import { KeyRepeater } from './keymap.js'
 import { logger } from './logger.js'
-import { actionStatus, agentStatus, controllerStatus } from './logging.js'
+import { actionStatus, agentStatus, controllerStatus, serializeGuiStatus } from './logging.js'
 import type { GuiStatus, GuiStatusTone } from './logging.js'
 import { HOST_PORT } from './ports.js'
 import { AgentPty } from './pty.js'
@@ -135,12 +135,15 @@ const STATUS_TINT: Record<GuiStatusTone, number> = {
   error: 31, // red
   idle: 90, // grey
 }
-function guiStatus(msg: string, tint = 90): void {
-  if (!usesPty && process.stderr.isTTY) console.error(`\x1b[${tint}m●\x1b[0m ${msg}`)
-  else if (!usesPty) console.error(msg)
-}
 function reportGuiStatus(status: GuiStatus | null): void {
-  if (status) guiStatus(status.message, STATUS_TINT[status.tone])
+  if (!status || usesPty) return
+  if (process.env.OPENMICRO_STATUS_JSON === '1') {
+    console.error(serializeGuiStatus(status))
+  } else if (process.stderr.isTTY) {
+    console.error(`\x1b[${STATUS_TINT[status.tone]}m●\x1b[0m ${status.message}`)
+  } else {
+    console.error(status.message)
+  }
 }
 
 const agent: Pick<AgentPty, 'write' | 'dispose'> = usesPty
@@ -166,10 +169,31 @@ const agent: Pick<AgentPty, 'write' | 'dispose'> = usesPty
       dispose: () => harness.dispose?.(),
     }
 
+// Native desktop wrappers provide their PID so an app crash or force-quit
+// cannot strand a controller-owning Node process in the background. Normal
+// CLI use has no supervisor and remains unchanged.
+const supervisorPid = Number(process.env.OPENMICRO_PARENT_PID)
+if (Number.isSafeInteger(supervisorPid) && supervisorPid > 1) {
+  setInterval(() => {
+    try {
+      process.kill(supervisorPid, 0)
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ESRCH') return
+      shutdown()
+      process.exit(0)
+    }
+  }, 1000).unref?.()
+}
+
 if (!usesPty) {
   // Launch/activate the target app the way pty harnesses launch their CLI.
   execFile(harness.command, harness.buildArgs(invocation.agentArgs), () => {})
-  guiStatus(`openmicro ${harness.kind} started — waiting for a controller… (Ctrl+C to quit)`, 36)
+  reportGuiStatus({
+    kind: 'lifecycle',
+    state: 'started',
+    message: `openmicro ${harness.kind} started — waiting for a controller… (Ctrl+C to quit)`,
+    tone: 'complete',
+  })
 }
 
 // Ctrl+C passthrough: forward the interrupt to the child so it decides how to
@@ -191,7 +215,12 @@ process.on('SIGTERM', () => {
 
 if (!isHost) {
   // ── Client: another openmicro owns the controller + state aggregation. ──
-  guiStatus('another openmicro instance owns the controller — running as client', 33)
+  reportGuiStatus({
+    kind: 'lifecycle',
+    state: 'client',
+    message: 'another openmicro instance owns the controller — running as client',
+    tone: 'warning',
+  })
   if (await isOpenmicroHost()) {
     runAsClient(wrapperId, invocation.kind, (bytes) => agent.write(bytes)).catch((err) =>
       logger.warn('client stream failed', err),

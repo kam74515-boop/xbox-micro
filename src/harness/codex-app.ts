@@ -16,6 +16,10 @@ import type { Action, AgentState, Harness } from './types.js'
 // layer's `keys` bindings (d-pad arrows, Shift+Tab clear/cycle, Ctrl+U) drive
 // the app. Sequences without an entry resolve to null (no GUI meaning).
 const KEY_EQUIVALENTS: Record<string, string> = {
+  '\r': 'keystroke return',
+  '\x1b': 'key code 53', // Escape
+  '\t': 'key code 48', // Tab
+  '\x7f': 'key code 51', // Delete
   '\x1b[A': 'key code 126', // up arrow
   '\x1b[B': 'key code 125', // down arrow
   '\x1b[C': 'key code 124', // right arrow

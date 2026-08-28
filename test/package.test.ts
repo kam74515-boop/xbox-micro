@@ -54,7 +54,7 @@ process.stdout.write(JSON.stringify({
 
     expect(result.status, result.stderr).toBe(0)
     expect(result.stdout).toBe(
-      '{"controller":["HidManager"],"logging":["actionStatus","agentStatus","controllerStatus"]}',
+      '{"controller":["HidManager"],"logging":["actionStatus","agentStatus","controllerStatus","serializeGuiStatus"]}',
     )
     expect(result.stderr).toBe('')
     expect(fs.readdirSync(home)).toEqual([])
@@ -66,23 +66,25 @@ process.stdout.write(JSON.stringify({
       path.join(temp, 'consumer.ts'),
       `import { HidManager, type AxisId, type ButtonId, type ControllerEvent, type ControllerType } from 'openmicro/controller'
 import { type Action } from 'openmicro/harness'
-import { actionStatus, agentStatus, controllerStatus, type AgentStatus, type GuiStatus, type GuiStatusTone } from 'openmicro/logging'
+import { actionStatus, agentStatus, controllerStatus, serializeGuiStatus, type AgentStatus, type GuiStatus, type GuiStatusKind, type GuiStatusTone } from 'openmicro/logging'
 const axis: AxisId = 'left_x'
 const button: ButtonId = 'south'
 const type: ControllerType = 'dualsense'
 const event: ControllerEvent = { kind: 'axis', axis, value: 0 }
 const action: Action = { type: 'accept' }
 const tone: GuiStatusTone = 'action'
+const kind: GuiStatusKind = 'action'
 const status: GuiStatus | null = actionStatus(button, type, action)
 const lifecycle: GuiStatus | null = controllerStatus({ kind: 'connected', controllerType: type })
 const state: AgentStatus | null = agentStatus(['waiting'])
 const manager = new HidManager()
+const serialized = status ? serializeGuiStatus(status) : ''
 manager.on('data', (value) => {
   const typed: ControllerEvent = value
   void typed
 })
 manager.stop()
-void [button, type, event, tone, status, lifecycle, state]
+void [button, type, event, tone, kind, status, lifecycle, state, serialized]
 `,
     )
 

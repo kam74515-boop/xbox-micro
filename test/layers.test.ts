@@ -34,6 +34,22 @@ describe('loadConfig / saveConfig', () => {
     expect(DEFAULT_CONFIG.layers[0].bindings.r2).toEqual({ type: 'keys', bytes: '\x15' })
   })
 
+  it('ships six usable experience layers with forward/back navigation', () => {
+    expect(DEFAULT_CONFIG.layers.map((layer) => layer.name)).toEqual([
+      'Codex 主控',
+      '语音与提示',
+      '代码审查',
+      '调试与测试',
+      '任务导航',
+      '自定义',
+    ])
+    DEFAULT_CONFIG.layers.forEach((layer, index) => {
+      expect(layer.bindings.menu).toEqual({ type: 'layer', index: (index + 1) % 6 })
+      expect(layer.bindings.view).toEqual({ type: 'layer', index: (index + 5) % 6 })
+      expect(Object.keys(layer.bindings).length).toBeGreaterThanOrEqual(6)
+    })
+  })
+
   it('defaults to ~/.openmicro/config.json, respecting a HOME override', () => {
     process.env.HOME = dir
     const config = loadConfig()
